@@ -7,6 +7,31 @@ export default class JianShuAdapter {
     // chrome.cookies.getAll({ domain: "zhihu.com"},  function(cookies){
     //     console.log(cookies)
     // })
+
+    modifyRequestHeaders(
+      'www.jianshu.com',
+      {
+        Origin: 'https://www.jianshu.com',
+        Referer: 'https://www.jianshu.com/',
+      },
+      ['*://www.jianshu.com/*'],
+      function (details) {
+        // parse token from cookie inject to headers
+        if (details.url.indexOf('www.jianshu.com/') > -1) {
+          details.requestHeaders = details.requestHeaders.map(_ => {
+            if (_.name === 'Origin') {
+              _.value = details.initiator
+            }
+
+            if (_.name === 'Referer') {
+              _.value = details.initiator + '/'
+            }
+
+            return _
+          })
+        }
+      }
+    )
   }
 
   async getMetaData() {
