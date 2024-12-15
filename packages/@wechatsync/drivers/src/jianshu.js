@@ -137,7 +137,12 @@ export default class JianShuAdapter {
         url: 'https://upload.qiniup.com/',
         method: 'post',
         data: formdata,
-        headers: { 'Content-Type': 'multipart/form-data' },
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Origin: 'https://www.jianshu.com',
+          Referer: 'https://www.jianshu.com/',
+          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36',
+        },
       })
 
       if (!res.data.url) {
