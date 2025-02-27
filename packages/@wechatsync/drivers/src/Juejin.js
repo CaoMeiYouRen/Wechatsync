@@ -25,6 +25,26 @@ export default class JuejinAdapter {
       }
     })
 
+    // modify origin headers
+    modifyRequestHeaders('juejin.cn', {
+      Origin: 'https://juejin.cn',
+      Referer: 'https://juejin.cn/'
+    }, [
+      '*://juejin.cn/*'  // 添加图片上传路径
+    ], function (details) {
+      if (details.initiator && details.initiator.indexOf('juejin.cn') > -1) {
+        details.requestHeaders = details.requestHeaders.map(_ => {
+          if (_.name === 'Origin') {
+            _.value = details.initiator
+          }
+          if (_.name === 'Referer') {
+            _.value = details.initiator + '/'
+          }
+          return _
+        })
+      }
+    })
+
   }
 
   async getMetaData() {
