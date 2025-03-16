@@ -26,24 +26,24 @@ export default class JuejinAdapter {
     })
 
     // modify origin headers
-    modifyRequestHeaders('juejin.cn', {
-      Origin: 'https://juejin.cn',
-      Referer: 'https://juejin.cn/'
-    }, [
-      '*://juejin.cn/*'  // 添加图片上传路径
-    ], function (details) {
-      if (details.initiator && details.initiator.indexOf('juejin.cn') > -1) {
-        details.requestHeaders = details.requestHeaders.map(_ => {
-          if (_.name === 'Origin') {
-            _.value = details.initiator
-          }
-          if (_.name === 'Referer') {
-            _.value = details.initiator + '/'
-          }
-          return _
-        })
-      }
-    })
+    // modifyRequestHeaders('juejin.cn', {
+    //   Origin: 'https://juejin.cn',
+    //   Referer: 'https://juejin.cn/'
+    // }, [
+    //   '*://juejin.cn/*'  // 添加图片上传路径
+    // ], function (details) {
+    //   if (details.initiator && details.initiator.indexOf('juejin.cn') > -1) {
+    //     details.requestHeaders = details.requestHeaders.map(_ => {
+    //       if (_.name === 'Origin') {
+    //         _.value = details.initiator
+    //       }
+    //       if (_.name === 'Referer') {
+    //         _.value = details.initiator + '/'
+    //       }
+    //       return _
+    //     })
+    //   }
+    // })
 
   }
 
@@ -72,7 +72,11 @@ export default class JuejinAdapter {
 
   async editPost(post_id, post) {
     console.log('TurndownService', turndown)
-    var turndownService = new turndown()
+    var turndownService = new turndown({
+      headingStyle: 'atx',
+      bulletListMarker: '-',
+      hr: '---',
+    })
     turndownService.use(tools.turndownExt)
     //  post.markdown ||
     var markdown = turndownService.turndown(post.post_content)
@@ -97,14 +101,21 @@ export default class JuejinAdapter {
     }
   }
 
-  async uploadFile(file) {
+  async uploadFile(file, uuid) {
     var src = file.src
     var imageId = Date.now() + Math.floor(Math.random() * 1000)
     const { data } = await axios.post('https://juejin.cn/image/urlSave', {
       url: src,
+      // imgType: "private",
+      // version: "2.0"
+    }, {
       headers: {
         Origin: 'https://juejin.cn',
         Referer: 'https://juejin.cn/'
+      },
+      params: {
+        // aid: 2608,
+        // uuid: imageId
       }
     })
     return [

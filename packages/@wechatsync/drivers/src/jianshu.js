@@ -109,7 +109,11 @@ export default class JianShuAdapter {
 
     if (post.post_content) {
       console.log('TurndownService', turndown)
-      var turndownService = new turndown()
+      var turndownService = new turndown({
+        headingStyle: 'atx',
+        bulletListMarker: '-',
+        hr: '---',
+      })
       turndownService.use(tools.turndownExt)
       requestData.content = turndownService.turndown(post.post_content)
       console.log('requestData.content', requestData.content)

@@ -4,6 +4,27 @@ export default class ZhiHuAdapter {
     // this.skipReadImage = true
     this.version = '0.0.1'
     this.name = 'zhihu'
+
+
+    // modify origin headers
+    // modifyRequestHeaders('www.zhihu.com', {
+    //   Origin: 'https://www.zhihu.com',
+    //   Referer: 'https://www.zhihu.com/'
+    // }, [
+    //   '*://www.zhihu.com/*',  // 添加图片上传路径
+    // ], function (details) {
+    //   if (details.initiator && details.initiator.indexOf('www.zhihu.com') > -1) {
+    //     details.requestHeaders = details.requestHeaders.map(_ => {
+    //       if (_.name === 'Origin') {
+    //         _.value = details.initiator
+    //       }
+    //       if (_.name === 'Referer') {
+    //         _.value = details.initiator + '/'
+    //       }
+    //       return _
+    //     })
+    //   }
+    // })
   }
 
   async getMetaData() {
@@ -47,17 +68,61 @@ export default class ZhiHuAdapter {
     console.log('editPost', post.post_thumbnail)
 
     // 移除多余的空行
-    post.post_content = post.post_content.replace(/\n(\n)*( )*(\n)*\n/g, '');
+    // post.post_content = post.post_content.replace(/\n(\n)*( )*(\n)*\n/g, '');
 
     console.log('editPost post.post_content', post.post_content)
+    console.log('TurndownService', turndown)
+    var turndownService = new turndown({
+      headingStyle: 'atx',
+      bulletListMarker: '-',
+      hr: '---',
+    })
+    turndownService.use(tools.turndownExt)
+    //  post.markdown ||
+    let markdown = post.markdown || turndownService.turndown(post.post_content)
+    // 移除多余的空行
+    markdown = markdown.replace(/(\n[\s|\t]*\r*\n)/g, '\n').replace(/\n+/g, '\n')
 
+    console.log('markdown', markdown)
+    /**请求网址:https://www.zhihu.com/api/v4/document_convert
+     * 请求方法:POST
+     * 请求数据：document: （二进制）
+
+      * 返回数据：filename:"前言.md"
+    html:"<ul>\n<li><strong>博客</strong>"
+*/
+    const formData = new FormData();
+    const markdownBlob = new Blob([markdown], {
+      type: 'text/markdown; charset=UTF-8' // 明确指定编码
+    });
+    formData.append('document', markdownBlob, 'post.md');
+
+    const document_res = await $.ajax({
+      url: 'https://www.zhihu.com/api/v4/document_convert',
+      type: 'POST',
+      data: formData,
+      processData: false, // 保持为 false
+      contentType: false, // 保持为 false
+      xhrFields: {
+        withCredentials: true // 确保发送 cookies
+      },
+      headers: {
+        'Accept': 'application/json', // 明确接受 JSON 响应
+        Origin: 'https://zhuanlan.zhihu.com',
+        Referer: 'https://zhuanlan.zhihu.com/',
+        'x-requested-with': 'fetch',
+        'x-xsrftoken': this._getXsrfToken(), // 添加 xsrf token
+      }
+    });
+    const html = this.normalizeList(document_res.html);
+    console.log('document_res', html);
     var res = await $.ajax({
       url: 'https://zhuanlan.zhihu.com/api/articles/' + post_id + '/draft',
       type: 'PATCH',
       contentType: 'application/json',
       data: JSON.stringify({
         title: post.post_title,
-        content: post.post_content,
+        content: html,
         isTitleImageFullScreen: false,
         titleImage: 'https://pic1.zhimg.com/' + post.post_thumbnail + '.png',
       }),
@@ -69,6 +134,24 @@ export default class ZhiHuAdapter {
       draftLink: 'https://zhuanlan.zhihu.com/p/' + post_id + '/edit',
     }
     // https://zhuanlan.zhihu.com/api/articles/68769713/draft
+  }
+
+  // 添加获取 xsrf token 的辅助方法
+  _getXsrfToken() {
+    // 从 cookie 中获取 xsrf token
+    const cookies = document.cookie.split(';');
+    for (let cookie of cookies) {
+      const [name, value] = cookie.trim().split('=');
+      if (name === '_xsrf') {
+        return value;
+      }
+    }
+    return '';
+  }
+
+  normalizeList(html) {
+    html = html.replaceAll('  </li>', '<br></li>')
+    return html;
   }
 
   untiImageDone(image_id) {
