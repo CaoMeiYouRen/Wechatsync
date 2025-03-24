@@ -46,32 +46,6 @@ export default class ZhiHuAdapter {
   }
 
   async addPost(post) {
-    var res = await $.ajax({
-      url: 'https://zhuanlan.zhihu.com/api/articles/drafts',
-      type: 'POST',
-      dataType: 'JSON',
-      contentType: 'application/json',
-      data: JSON.stringify({
-        title: post.post_title,
-        // content: post.post_content
-      }),
-    })
-    console.log(res)
-    return {
-      status: 'success',
-      post_id: res.id,
-    }
-    //
-  }
-
-  async editPost(post_id, post) {
-    console.log('editPost', post.post_thumbnail)
-
-    // 移除多余的空行
-    // post.post_content = post.post_content.replace(/\n(\n)*( )*(\n)*\n/g, '');
-
-    console.log('editPost post.post_content', post.post_content)
-    console.log('TurndownService', turndown)
     var turndownService = new turndown({
       headingStyle: 'atx',
       bulletListMarker: '-',
@@ -81,17 +55,14 @@ export default class ZhiHuAdapter {
     //  post.markdown ||
     console.log('post.markdown', post.markdown)
     let markdown = post.markdown || turndownService.turndown(post.post_content)
-    // 移除多余的空行
-    markdown = markdown.replace(/(\n[\s|\t]*\r*\n)/g, '\n').replace(/\n+/g, '\n')
-
     console.log('markdown', markdown)
     /**请求网址:https://www.zhihu.com/api/v4/document_convert
-     * 请求方法:POST
-     * 请求数据：document: （二进制）
+       * 请求方法:POST
+       * 请求数据：document: （二进制）
 
-      * 返回数据：filename:"前言.md"
-    html:"<ul>\n<li><strong>博客</strong>"
-*/
+        * 返回数据：filename:"前言.md"
+      html:"<ul>\n<li><strong>博客</strong>"
+  */
     const formData = new FormData();
     const markdownBlob = new Blob([markdown], {
       type: 'text/markdown; charset=UTF-8' // 明确指定编码
@@ -117,13 +88,38 @@ export default class ZhiHuAdapter {
     });
     const html = this.normalizeList(document_res.html);
     console.log('document_res', html);
+
+    post.post_content = html
+
+    var res = await $.ajax({
+      url: 'https://zhuanlan.zhihu.com/api/articles/drafts',
+      type: 'POST',
+      dataType: 'JSON',
+      contentType: 'application/json',
+      data: JSON.stringify({
+        title: post.post_title,
+        // content: post.post_content
+      }),
+    })
+    console.log(res)
+    return {
+      status: 'success',
+      post_id: res.id,
+    }
+    //
+  }
+
+  async editPost(post_id, post) {
+
+    console.log('post.post_content', post.post_content);
+
     var res = await $.ajax({
       url: 'https://zhuanlan.zhihu.com/api/articles/' + post_id + '/draft',
       type: 'PATCH',
       contentType: 'application/json',
       data: JSON.stringify({
         title: post.post_title,
-        content: html,
+        content: post.post_content,
         isTitleImageFullScreen: false,
         titleImage: 'https://pic1.zhimg.com/' + post.post_thumbnail + '.png',
       }),
@@ -151,7 +147,7 @@ export default class ZhiHuAdapter {
   }
 
   normalizeList(html) {
-    html = html.replaceAll('  </li>', '<br></li>')
+    // html = html.replaceAll('  </li>', '<br></li>')
     return html;
   }
 
