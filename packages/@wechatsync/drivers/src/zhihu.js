@@ -79,6 +79,7 @@ export default class ZhiHuAdapter {
     })
     turndownService.use(tools.turndownExt)
     //  post.markdown ||
+    console.log('post.markdown', post.markdown)
     let markdown = post.markdown || turndownService.turndown(post.post_content)
     // 移除多余的空行
     markdown = markdown.replace(/(\n[\s|\t]*\r*\n)/g, '\n').replace(/\n+/g, '\n')

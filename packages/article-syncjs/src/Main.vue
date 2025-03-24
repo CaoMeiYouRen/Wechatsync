@@ -178,10 +178,10 @@ export default {
       if (!post.content) throw new Error('content不能为空')
     }
 
-    window.setupPost = function (post) {
-      checkPost(post)
-      self.currentArtitle = post
-    }
+    // window.setupPost = function (post) {
+    //   checkPost(post)
+    //   self.currentArtitle = post
+    // }
     window.syncPost = function (post) {
       checkPost(post)
       self.currentArtitle = post
