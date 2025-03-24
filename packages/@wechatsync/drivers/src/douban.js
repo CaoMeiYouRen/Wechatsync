@@ -28,7 +28,7 @@ const imageBlock = (remarkable) => {
         type: 'image_open',
         src: match[2],
         alt: match[1],
-        lines: [ startLine, state.line ],
+        lines: [startLine, state.line],
         level: state.level
       })
 
@@ -47,11 +47,11 @@ const imageBlock = (remarkable) => {
 
 
 function getFormData(obj) {
-    var map = {};
-    obj.find('input').each(function() {
-        map[$(this).attr("name")] = $(this).val();
-    });
-    return map
+  var map = {};
+  obj.find('input').each(function () {
+    map[$(this).attr("name")] = $(this).val();
+  });
+  return map
 }
 
 
@@ -62,10 +62,10 @@ export default class DoubanAdapter {
     this.name = 'douban'
 
     modifyRequestHeaders('www.douban.com/', {
-    	Origin: 'https://www.douban.com',
+      Origin: 'https://www.douban.com',
       Referer: 'https://www.douban.com'
     }, [
-    	'*://www.douban.com/*',
+      '*://www.douban.com/*',
     ])
   }
 
@@ -73,14 +73,14 @@ export default class DoubanAdapter {
     var res = await $.ajax({ url: 'https://www.douban.com/note/create' })
     var innerDoc = $(res)
     var doc = $('<div>').append(innerDoc.clone())
-    var configScript = innerDoc.filter(function(index, el){ return $(el).text().indexOf('_POST_PARAMS') > -1 });
-    if(configScript.length == 0) {
-        throw new Error('未登录')
+    var configScript = innerDoc.filter(function (index, el) { return $(el).text().indexOf('_POST_PARAMS') > -1 });
+    if (configScript.length == 0) {
+      throw new Error('未登录')
     }
     var code = configScript.text()
     var wx = new Function(
-        'Do ={}; Do.add = function() {} '+ code +
-        '; return {_USER_AVATAR: _USER_AVATAR, _USER_NAME: _USER_NAME, _NOTE_ID: _NOTE_ID, _TAGS: _TAGS, _POST_PARAMS: _POST_PARAMS};'
+      'Do ={}; Do.add = function() {} ' + code +
+      '; return {_USER_AVATAR: _USER_AVATAR, _USER_NAME: _USER_NAME, _NOTE_ID: _NOTE_ID, _TAGS: _TAGS, _POST_PARAMS: _POST_PARAMS};'
     )();
     console.log(code, wx)
 
@@ -125,20 +125,20 @@ export default class DoubanAdapter {
     const draftjsState = JSON.stringify(tools.markdownToDraft(markdown, {
       remarkablePlugins: [imageBlock],
       blockTypes: {
-        image_open: function(item, generateUniqueKey) {
+        image_open: function (item, generateUniqueKey) {
           console.log('image_open', 'blockTypes', item)
           var key = generateUniqueKey()
           var blockEntities = {}
           // ?#
-          var sourcePair =  item.src.split("?#")
+          var sourcePair = item.src.split("?#")
           var rawSrc = sourcePair[0]
           var sourceId = sourcePair[1]
-          if(sourcePair.length) {
+          if (sourcePair.length) {
             item.src = rawSrc
           }
           var imageTemplate = {
             id: sourceId,
-            src:  item.src,
+            src: item.src,
             thumb: item.src,
             url: item.src,
           }
@@ -168,8 +168,8 @@ export default class DoubanAdapter {
       },
       blockEntities: {
         image: function (item) {
-          var sourcePair =  item.src.split("?#")
-          if(sourcePair.length) {
+          var sourcePair = item.src.split("?#")
+          if (sourcePair.length) {
             var rawSrc = sourcePair[0]
             var sourceId = sourcePair[1]
             item.id = sourceId
@@ -218,8 +218,8 @@ export default class DoubanAdapter {
     // review[donate]:
     // review[original]:
     // ck: O4jk
-    if(state && state.is_review) {
-      if(state.subject == 'music') {
+    if (state && state.is_review) {
+      if (state.subject == 'music') {
         draftLink = state.url;
         requestUrl = 'https://music.douban.com/j/review/create'
         requestBody = {
@@ -227,7 +227,7 @@ export default class DoubanAdapter {
           topic_id: '',
           review: {
             subject_id: state.id,
-            title:  post.post_title,
+            title: post.post_title,
             introduction: '',
             text: draftjsState,
             rating: '',
@@ -247,7 +247,7 @@ export default class DoubanAdapter {
       data: requestBody,
     })
 
-    if(res.url) {
+    if (res.url) {
       draftLink = `https://www.douban.com/note/${requestBody.note_id}/`
     }
 
@@ -286,8 +286,8 @@ export default class DoubanAdapter {
   }
 
   addPromotion(post) {
-    var sharcode = `<blockquote><p>本文使用 <a href="https://zhuanlan.zhihu.com/p/358098152" class="internal">文章同步助手</a> 同步</p></blockquote>`
-    post.content = post.content.trim() + `${sharcode}`
+    // var sharcode = `<blockquote><p>本文使用 <a href="https://zhuanlan.zhihu.com/p/358098152" class="internal">文章同步助手</a> 同步</p></blockquote>`
+    // post.content = post.content.trim() + `${sharcode}`
   }
 
   async uploadFile(file) {
@@ -300,9 +300,9 @@ export default class DoubanAdapter {
       type: file.type
     });
 
-    if(state && state.is_review) {
-      if(state.subject == 'music') {
-        requestUrl =  'https://music.douban.com/j/review/upload_image';
+    if (state && state.is_review) {
+      if (state.subject == 'music') {
+        requestUrl = 'https://music.douban.com/j/review/upload_image';
         formdata.append('review_id', '')
         formdata.append('picfile', blob)
       }
@@ -322,9 +322,9 @@ export default class DoubanAdapter {
     })
 
     var url = res.data.photo.url
-    if(!res.data.photo) {
-        console.log(res.data);
-        throw new Error('upload failed')
+    if (!res.data.photo) {
+      console.log(res.data);
+      throw new Error('upload failed')
     }
     //  return url;
     return [

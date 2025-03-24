@@ -35,11 +35,10 @@ export default class WeiboAdapter {
   async addPost(post) {
     var res = await $.post(
       'https://card.weibo.com/article/v3/aj/editor/draft/create?uid=' +
-        cacheWeiboUser.uid
+      cacheWeiboUser.uid
     )
     if (res.code != 100000) {
       throw new Error(res.msg)
-      return
     }
 
     console.log(res)
@@ -193,7 +192,7 @@ export default class WeiboAdapter {
       // }
     })
 
-    if(res.code == '111006') {
+    if (res.code == '111006') {
       throw new Error(res.msg)
     }
     console.log(res)
@@ -206,7 +205,7 @@ export default class WeiboAdapter {
 
   untiImageDone(src) {
     return new Promise((resolve, reject) => {
-      ;(async function loop() {
+      ; (async function loop() {
         var res = await $.ajax({
           url:
             'https://card.weibo.com/article/v3/aj/editor/plugins/asyncimginfo?uid=' +
@@ -265,7 +264,7 @@ export default class WeiboAdapter {
     var uploadurl2 = 'https://picupload.weibo.com/interface/pic_upload.php?app=miniblog&s=json&p=1&data=1&url=&markpos=1&logo=0&nick='
     var fileResp = await $.ajax({
       url:
-      uploadurl1,
+        uploadurl1,
       type: 'POST',
       processData: false,
       data: new Blob([file.bits]),
@@ -285,7 +284,7 @@ export default class WeiboAdapter {
 
 
   addPromotion(post) {
-    var sharcode = `<blockquote>本文使用 <a href="https://zhuanlan.zhihu.com/p/358098152" class="internal">文章同步助手</a> 同步</blockquote>`
-    post.content = post.content.trim() + `${sharcode}`
+    // var sharcode = `<blockquote>本文使用 <a href="https://zhuanlan.zhihu.com/p/358098152" class="internal">文章同步助手</a> 同步</blockquote>`
+    // post.content = post.content.trim() + `${sharcode}`
   }
 }
