@@ -46,50 +46,6 @@ export default class ZhiHuAdapter {
   }
 
   async addPost(post) {
-    var turndownService = new turndown({
-      headingStyle: 'atx',
-      bulletListMarker: '-',
-      hr: '---',
-    })
-    turndownService.use(tools.turndownExt)
-    //  post.markdown ||
-    console.log('post.markdown', post.markdown)
-    let markdown = post.markdown || turndownService.turndown(post.post_content)
-    console.log('markdown', markdown)
-    /**请求网址:https://www.zhihu.com/api/v4/document_convert
-       * 请求方法:POST
-       * 请求数据：document: （二进制）
-
-        * 返回数据：filename:"前言.md"
-      html:"<ul>\n<li><strong>博客</strong>"
-  */
-    const formData = new FormData();
-    const markdownBlob = new Blob([markdown], {
-      type: 'text/markdown; charset=UTF-8' // 明确指定编码
-    });
-    formData.append('document', markdownBlob, 'post.md');
-
-    const document_res = await $.ajax({
-      url: 'https://www.zhihu.com/api/v4/document_convert',
-      type: 'POST',
-      data: formData,
-      processData: false, // 保持为 false
-      contentType: false, // 保持为 false
-      xhrFields: {
-        withCredentials: true // 确保发送 cookies
-      },
-      headers: {
-        'Accept': 'application/json', // 明确接受 JSON 响应
-        Origin: 'https://zhuanlan.zhihu.com',
-        Referer: 'https://zhuanlan.zhihu.com/',
-        'x-requested-with': 'fetch',
-        'x-xsrftoken': this._getXsrfToken(), // 添加 xsrf token
-      }
-    });
-    const html = this.normalizeList(document_res.html);
-    console.log('document_res', html);
-
-    post.post_content = html
 
     var res = await $.ajax({
       url: 'https://zhuanlan.zhihu.com/api/articles/drafts',
@@ -112,6 +68,51 @@ export default class ZhiHuAdapter {
   async editPost(post_id, post) {
 
     console.log('post.post_content', post.post_content);
+
+    var turndownService = new turndown({
+      headingStyle: 'atx',
+      bulletListMarker: '-',
+      hr: '---',
+    })
+    turndownService.use(tools.turndownExt)
+    //  post.markdown ||
+    console.log('post.markdown', post.markdown)
+    let markdown = post.markdown || turndownService.turndown(post.post_content)
+    console.log('markdown', markdown)
+    /**请求网址:https://www.zhihu.com/api/v4/document_convert
+       * 请求方法:POST
+       * 请求数据：document: （二进制）
+
+        * 返回数据：filename:"前言.md"
+      html:"<ul>\n<li><strong>博客</strong>"
+  */
+    // const formData = new FormData();
+    // const markdownBlob = new Blob([markdown], {
+    //   type: 'text/markdown; charset=UTF-8' // 明确指定编码
+    // });
+    // formData.append('document', markdownBlob, 'post.md');
+
+    // const document_res = await $.ajax({
+    //   url: 'https://www.zhihu.com/api/v4/document_convert',
+    //   type: 'POST',
+    //   data: formData,
+    //   processData: false, // 保持为 false
+    //   contentType: false, // 保持为 false
+    //   xhrFields: {
+    //     withCredentials: true // 确保发送 cookies
+    //   },
+    //   headers: {
+    //     'Accept': 'application/json', // 明确接受 JSON 响应
+    //     Origin: 'https://zhuanlan.zhihu.com',
+    //     Referer: 'https://zhuanlan.zhihu.com/',
+    //     'x-requested-with': 'fetch',
+    //     'x-xsrftoken': this._getXsrfToken(), // 添加 xsrf token
+    //   }
+    // });
+    // const html = this.normalizeList(document_res.html);
+    // console.log('document_res', html);
+
+    // post.post_content = html
 
     var res = await $.ajax({
       url: 'https://zhuanlan.zhihu.com/api/articles/' + post_id + '/draft',
